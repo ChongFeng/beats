@@ -59,6 +59,12 @@ type ProcCpuTime struct {
 	Start       string  `json:"start_time"`
 }
 
+type ProcFD struct {
+	Open      uint64
+	SoftLimit uint64
+	HardLimit uint64
+}
+
 type Process struct {
 	Pid      int          `json:"pid"`
 	Ppid     int          `json:"ppid"`
@@ -69,6 +75,7 @@ type Process struct {
 	Mem      *ProcMemStat `json:"mem"`
 	Cpu      *ProcCpuTime `json:"cpu"`
 	ctime    time.Time
+	FD       *ProcFD
 }
 
 type FileSystemStat struct {
@@ -286,6 +293,16 @@ func (proc *Process) getDetails(cmdline string) error {
 		Total:  cpu.Total,
 		User:   cpu.User,
 		System: cpu.Sys,
+	}
+
+	fd := sigar.ProcFDUsage{}
+	if err := fd.Get(proc.Pid); err != nil {
+		return fmt.Errorf("error getting process fd for pid=%d: %v", proc.Pid, err)
+	}
+	proc.FD = &ProcFD{
+		Open:      fd.Open,
+		SoftLimit: fd.SoftLimit,
+		HardLimit: fd.HardLimit,
 	}
 
 	if cmdline == "" {

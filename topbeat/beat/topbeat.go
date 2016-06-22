@@ -245,6 +245,7 @@ func (t *Topbeat) exportProcStats() error {
 				"username": process.Username,
 				"mem":      process.Mem,
 				"cpu":      process.Cpu,
+				"fd":       process.FD,
 			}
 
 			if process.CmdLine != "" {
